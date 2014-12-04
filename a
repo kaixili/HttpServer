@@ -1,0 +1,11 @@
+
+import socket
+s=socket.socket(socket.AF_INET,socket.SOCK_STREAM,0)
+#服务器的主机名和端口
+ 
+host="localhost"
+port=1235
+s.connect((host,port))
+s.send(b"i am client")
+data=s.recv(1024)
+print("Reply from server-----{0}".format(data))
