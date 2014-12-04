@@ -33,12 +33,18 @@ while 1:
     data = client.recv(size_max)
     print('{0} From {1}'.format(data, address))
     
+    
     if not data:
         continue
-    data_request_address = str(data).split(' ')[1]
+    data_request_address = data.decode('utf-8').split()[1]
     if data_request_address == '/':
         data_request_address = '/index.html'
-        
+    
+    #data_request_method = data.decode('utf-8').split()[0]
+    #post 请求 留做后面处理
+    #分两种情况：application/x-www-form-urlencoded 和 multipart/form-data
+    #RFC 2616 以后再看
+    
     target = location
     for i in data_request_address.split('/')[1:]:
             target = target + '/' + i
@@ -47,8 +53,10 @@ while 1:
         try:
             try:
                 with open(target) as data_send:
-                    client.send(bytes('HTTP/1.0 200 OK\r\n', 'UTF-8'))
-                    client.send(bytes('HTTP/1.0 200 OK\r\n', 'UTF-8'))
+                    client.send(bytes('HTTP/1.1 200 OK\r\n', 'UTF-8'))
+                    
+                    
+                    
                     client.send(bytes("Content-Type: {0}\r\n\r\n".format(content_type[target[-3:]]), 'UTF-8'))
                     client.send(bytes(data_send.read(), 'UTF-8'))
             except UnicodeDecodeError:
@@ -56,7 +64,7 @@ while 1:
                  #   client.send(bytes('HTTP/1.0 200 OK\r\n', 'UTF-8'))
                   #  client.send(bytes("Content-Type:{0}\r\n\r\n".format(content_type[target[-3:]]), 'UTF-8') + data_send.read())
                
-                data_send = b'''HTTP/1.x 200 OK
+                data_send = b'''HTTP/1.1 200 OK
 Content_Type:image/gif/
 
 '''
@@ -67,7 +75,7 @@ Content_Type:image/gif/
         except FileNotFoundError:
             page404 = location + '/404.html'
             with open(page404) as data_send:
-                client.send(bytes('HTTP/1.0 404 Not Found\r\n', 'UTF-8'))
+                client.send(bytes('HTTP/1.1 404 Not Found\r\n', 'UTF-8'))
                 client.send(bytes("Content-Type: text/html\r\n\r\n", 'UTF-8'))
                 client.send(bytes(data_send.read(), 'UTF-8'))
     
