@@ -45,7 +45,7 @@ while 1:
     target = location
     for i in data_request_address.split('/')[1:]:
             target = target + '/' + i
-
+ 
     try:
         try:
             with open(target) as data_send:
