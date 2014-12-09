@@ -2,8 +2,9 @@ import ssl, socket, time
 context = ssl.SSLContext(ssl.PROTOCOL_SSLv23)
 context.load_cert_chain(certfile='cacert.pem', keyfile='privkey.pem') 
                         
-bindsocket = socket.socket()
-bindsocket.bind(('127.0.0.1', 443))
+bindsocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+bindsocket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+bindsocket.bind(('127.0.0.1', 8008))
 bindsocket.listen(1023)
 
 newsocket, address = bindsocket.accept()

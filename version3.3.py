@@ -1,9 +1,15 @@
 import socket
 import select
- 
- 
+
+from data2 import content_type, responses_stat
+
+location = '/home/lkx810/b' 
+port = 8001
+    
+
 class Client(object):
     def __init__(self, addr, sock):
+        self.addr = addr
         self._socket = sock
         self._backlog = b''
         self.done = False
@@ -15,13 +21,47 @@ class Client(object):
         is received from the client.
         """
         ss = data.decode('utf-8', 'replace')
-        for s in ss.strip().split('\n'):
-            if s == "hello":
-                self.write("Hello, World!\n")
+        ss = ss.strip().split()
+        print('FROM {1}:\n{0}'.format(ss, self.addr))
+        
+        request = ss[1]
+        if request[-1] == '/':
+            request += 'index.html'
+        elif request[0] != '/':
+            pass
+        
+        request = location + request
+        print(request)
+        self.open_file(request)
+        
+    def open_file(self, target):
+        try:
+            try:
+                with open(target) as data_send:
+                    data_send = data_send.read()
+                    self.write(data_send, 200, target)
+                
+            except UnicodeDecodeError:
+                f = open(target, 'rb').read()
+                
+                self.write(data_send, 200, target, 1)
+                
+        except FileNotFoundError:
+            target = location + '/404.html'
+            with open(target) as data_send:
+                data_send = data_send.read()
+                self.write(data_send, 404, target)
+
+        
  
-    def write(self, data):
-        self._backlog += bytearray(data, 'utf-8')
- 
+    def write(self, data, responses, target, rb=0):
+        self._backlog += bytearray("HTTP/1.1 {0} {1}\r\n".format(responses, responses_stat[responses][0]), 'UTF-8')
+        self._backlog += bytearray("Content-Type: {0}\r\n\r\n".format(content_type[target[-3:]]), 'UTF-8')
+        if not rb:
+            self._backlog += bytearray(data, 'utf-8')
+        elif rb:
+            self._backlog += bytearray(data)
+        
     def _read_ready(self):
         """
         Since sockets only allow for reading a specified amount
@@ -41,6 +81,7 @@ class Client(object):
         if not r:
             self.done = True
             return
+        print('-'+'GET REQUEST'+'-'*40)
         self.read(data)
  
     def _write_ready(self):
@@ -58,10 +99,11 @@ class Client(object):
 def main_loop():
     sock = socket.socket()
     sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-    sock.bind(("", 8002))
+    sock.bind(('', port))
     sock.listen(1)  # listen(1) means that we only allow new
                     # connections when the previous ones have
                     # been properly processed.
+    print('Start Listening at 0.0.0.0:{0}'.format(port))
     clients = {}  # Keep a dictionary mapping sockets to clients
     try:
         while True:
@@ -71,6 +113,8 @@ def main_loop():
             rlist = [sock] + list(clients.keys())
             wlist = [s for (s, c) in clients.items() if c._backlog]
             (rs, ws, _) = select.select(rlist, wlist, [])
+            if ws:
+                print('-'+'SENDING'+'-'*40)
             try:
                 for r in rs:
                     if r == sock:
@@ -98,4 +142,5 @@ def main_loop():
         sock.close()
         
         
-main_loop()
+if __name__ == '__main__':
+    main_loop()

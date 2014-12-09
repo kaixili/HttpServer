@@ -9,7 +9,7 @@ serversocket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 serversocket.bind(('', 8080))
 serversocket.listen(1)
 serversocket.setblocking(0)
-serversocket.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)#不要缓存 立即发送
+serversocket.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1) #不要缓存 立即发送
 
 epoll = select.epoll()
 epoll.register(serversocket.fileno(), select.EPOLLIN)
