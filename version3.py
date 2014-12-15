@@ -1,8 +1,9 @@
-import optparse
+#import optparse
 import os
 import socket
 import time
 import ssl
+#import multiprocessing
 
 from threading import Thread
 from io import StringIO
@@ -11,6 +12,8 @@ from data2 import content_type, responses_stat #2个字典数据
 
 host, port, ssl_port = '', 80, 443
 location = os.getcwd() + '/html'
+
+
 
 def http_server(client, address, _ssl = 0):
     if _ssl:
@@ -27,7 +30,7 @@ def http_server(client, address, _ssl = 0):
     if data:
         data_request_method = data.decode('utf-8').split()[0]
         if data_request_method == 'POST':
-            http_GUI(data.decode('utf-8').split()[-1])
+            http_GUI(data.decode('utf-8').split()[-1], address)
         
         data_get = data.decode('utf-8').split()[1].split('?')
         data_request_address = data_get[0]
@@ -81,7 +84,7 @@ def http_GUI(data_post, address):
     c.write(data_post)
     c.write('FROM {0}\n'.format(address))
     c.close()
-
+    
 
 
 def main():
